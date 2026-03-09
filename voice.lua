@@ -1,72 +1,85 @@
--- [[ UPDATED: STABLE FLY + VOICE DISTORTER ]] --
+-- [[ FINAL STABLE: WASD FLY + VOICE DISTORTER ]] --
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local Mouse = LP:GetMouse()
 
--- === PART 1: VOICE DISTORTER (ANTI-AI) ===
+-- === PART 1: VOICE DISTORTER ===
 local function applyVoice(char)
     task.wait(1)
     local mic = char:FindFirstChildOfClass("AudioDeviceInput") or char.PrimaryPart:FindFirstChildOfClass("AudioDeviceInput")
     if mic then
-        local shifter = Instance.new("AudioPitchShifter")
-        shifter.Pitch = 0.94 + (math.random() * 0.12)
-        shifter.Parent = mic
-        
-        local comp = Instance.new("AudioCompressor")
+        local shifter = Instance.new("AudioPitchShifter", mic)
+        shifter.Pitch = 0.95 + (math.random() * 0.1)
+        local comp = Instance.new("AudioCompressor", mic)
         comp.Threshold = -10
-        comp.Parent = mic
-        print("Voice Distortion Active")
+        print("Voice Protected")
     end
 end
 
--- === PART 2: STABLE FLY (NO TALSICK) ===
+-- === PART 2: WASD FLY SYSTEM ===
 local flying = false
 local speed = 50
-local flyPart = nil
+local bv, bg
 
 local function toggleFly()
     local char = LP.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    local root = char.HumanoidRootPart
+    local root = char:FindFirstChild("HumanoidRootPart")
     local hum = char:FindFirstChildOfClass("Humanoid")
+    if not root or not hum then return end
 
     flying = not flying
 
     if flying then
         hum.PlatformStand = true
-        -- Gagawa tayo ng "FlyPart" para stable ang position
-        flyPart = Instance.new("BodyVelocity")
-        flyPart.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        flyPart.Velocity = Vector3.new(0,0,0)
-        flyPart.Name = "StableFly"
-        flyPart.Parent = root
         
-        local gyro = Instance.new("BodyGyro")
-        gyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-        gyro.P = 10000
-        gyro.Name = "StableGyro"
-        gyro.Parent = root
+        -- BodyVelocity para sa Movement
+        bv = Instance.new("BodyVelocity", root)
+        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bv.Velocity = Vector3.new(0,0,0)
+        
+        -- BodyGyro para hindi tumumba ang character
+        bg = Instance.new("BodyGyro", root)
+        bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        bg.P = 15000
+        bg.CFrame = root.CFrame
 
         task.spawn(function()
             while flying do
-                -- Susunod sa Camera pero hindi mag-vibrate/talsik
-                local direction = workspace.CurrentCamera.CFrame.LookVector
-                flyPart.Velocity = direction * speed
-                gyro.CFrame = workspace.CurrentCamera.CFrame
+                -- WASD Logic
+                local direction = Vector3.new(0,0,0)
+                local cam = workspace.CurrentCamera.CFrame
+                
+                if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.W) then
+                    direction = direction + cam.LookVector
+                end
+                if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.S) then
+                    direction = direction - cam.LookVector
+                end
+                if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.A) then
+                    direction = direction - cam.RightVector
+                end
+                if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.D) then
+                    direction = direction + cam.RightVector
+                end
+                
+                bv.Velocity = direction.Unit * speed
+                if direction.Magnitude == 0 then bv.Velocity = Vector3.new(0,0.1,0) end -- Para hindi mahulog pag walang pinipindot
+                
+                bg.CFrame = cam
                 task.wait()
             end
+            -- Clean up pag OFF
+            if bv then bv:Destroy() end
+            if bg then bg:Destroy() end
+            hum.PlatformStand = false
         end)
-        print("Fly ON (Stable)")
+        print("Fly ON (WASD Active)")
     else
-        -- Clean up para bumalik sa normal
-        hum.PlatformStand = false
-        if root:FindFirstChild("StableFly") then root.StableFly:Destroy() end
-        if root:FindFirstChild("StableGyro") then root.StableGyro:Destroy() end
         print("Fly OFF")
     end
 end
 
--- Keybind F
+-- Toggle Key: F
 Mouse.KeyDown:Connect(function(key)
     if key:lower() == "f" then toggleFly() end
 end)
