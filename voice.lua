@@ -1,27 +1,25 @@
--- [[ XENO ALL-IN-ONE: VOICE + WASD FLY + INVISIBLE UI ]] --
+-- [[ XENO ALL-IN-ONE: VOICE + WASD FLY + FE INVISIBLE ]] --
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local Mouse = LP:GetMouse()
 
 -- === PART 1: UI SETUP ===
 local ScreenGui = Instance.new("ScreenGui", LP.PlayerGui)
-ScreenGui.Name = "XenoTools"
-
 local MainButton = Instance.new("TextButton", ScreenGui)
 MainButton.Size = UDim2.new(0, 150, 0, 50)
 MainButton.Position = UDim2.new(0, 10, 0.5, 0)
 MainButton.Text = "Invisible: OFF"
 MainButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 MainButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-MainButton.Draggable = true -- Pwede mong i-move ang button
+MainButton.Active = true
+MainButton.Draggable = true 
 
--- === PART 2: INVISIBLE LOGIC ===
+-- === PART 2: FE INVISIBLE LOGIC ===
 local isInvisible = false
-local storedCFrame
 
 MainButton.MouseButton1Click:Connect(function()
     local char = LP.Character
-    if not char or not char:FindFirstChild("LowerTorso") then return end
+    if not char then return end
     
     isInvisible = not isInvisible
     
@@ -29,29 +27,45 @@ MainButton.MouseButton1Click:Connect(function()
         MainButton.Text = "Invisible: ON"
         MainButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
         
-        -- Itatago ang character sa ilalim ng map
-        storedCFrame = char.LowerTorso.RootIt.C0
-        char.LowerTorso.RootIt.C0 = char.LowerTorso.RootIt.C0 * CFrame.new(0, 5000, 0)
+        -- Ginagawang transparent lahat ng parte ng katawan
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") or part:IsA("Decal") then
+                if part.Name ~= "HumanoidRootPart" then
+                    part.Transparency = 1
+                end
+            end
+        end
+        -- Tinatago ang Face at Accessories
+        if char:FindFirstChild("Head") and char.Head:FindFirstChild("face") then
+            char.Head.face.Transparency = 1
+        end
     else
         MainButton.Text = "Invisible: OFF"
         MainButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         
-        -- Ibabalik ang character
-        char.LowerTorso.RootIt.C0 = storedCFrame
+        -- Binabalik sa normal
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") or part:IsA("Decal") then
+                part.Transparency = 0
+            end
+        end
+        if char:FindFirstChild("Head") and char.Head:FindFirstChild("face") then
+            char.Head.face.Transparency = 0
+        end
     end
 end)
 
--- === PART 3: VOICE DISTORTER (RE-APPLY ON SPAWN) ===
+-- === PART 3: VOICE DISTORTER ===
 local function applyVoice(char)
     task.wait(1)
-    local mic = char:FindFirstChildOfClass("AudioDeviceInput") or char:WaitForChild("HumanoidRootPart"):FindFirstChildOfClass("AudioDeviceInput")
+    local mic = char:FindFirstChildOfClass("AudioDeviceInput") or char.PrimaryPart:FindFirstChildOfClass("AudioDeviceInput")
     if mic then
         local shifter = Instance.new("AudioPitchShifter", mic)
-        shifter.Pitch = 0.95 + (math.random() * 0.1)
+        shifter.Pitch = 0.94 + (math.random() * 0.12)
     end
 end
 
--- === PART 4: WASD FLY (TOGGLE: F) ===
+-- === PART 4: WASD FLY (F) ===
 local flying = false
 local speed = 50
 local bv, bg
