@@ -1,17 +1,19 @@
--- [[ GOD MODE + SPEED TRAIN INJECTOR ]] --
+-- [[ ADVANCED CHARACTER SPOOF + TRAIN SNIPER ]] --
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Target Remote based sa Dex screenshot mo
-local speedRemote = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("TrainSystem"):WaitForChild("ReqUpdateTrainSpeed")
+-- Remote path base sa Dex mo
+local remotePath = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("TrainSystem")
+local clickRemote = remotePath:WaitForChild("ReqClickTrain")
+local speedRemote = remotePath:WaitForChild("ReqUpdateTrainSpeed")
 
 -- === UI SETUP ===
 local ScreenGui = Instance.new("ScreenGui", LP.PlayerGui)
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Size = UDim2.new(0, 160, 0, 110)
 MainFrame.Position = UDim2.new(0, 10, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.Draggable = true
 MainFrame.Active = true
 
@@ -26,39 +28,50 @@ local function createBtn(name, pos, color)
     return b
 end
 
-local godBtn = createBtn("God Mode: OFF", UDim2.new(0, 5, 0, 5), Color3.fromRGB(150, 0, 0))
-local speedBtn = createBtn("MAX SPEED: OFF", UDim2.new(0, 5, 0, 55), Color3.fromRGB(0, 100, 200))
+local godBtn = createBtn("GOD MODE: OFF", UDim2.new(0, 5, 0, 5), Color3.fromRGB(120, 0, 0))
+local trainBtn = createBtn("ULTRA TRAIN: OFF", UDim2.new(0, 5, 0, 55), Color3.fromRGB(0, 80, 150))
 
--- === GOD MODE ===
+-- === GOD MODE (PERMANENT DEATH BYPASS) ===
 local godEnabled = false
 godBtn.MouseButton1Click:Connect(function()
     godEnabled = not godEnabled
-    godBtn.Text = godEnabled and "God Mode: ON" or "God Mode: OFF"
-    godBtn.BackgroundColor3 = godEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
-    task.spawn(function()
-        while godEnabled do
-            if LP.Character and LP.Character:FindFirstChild("Humanoid") then
-                LP.Character.Humanoid.Health = LP.Character.Humanoid.MaxHealth
-            end
-            task.wait(0.1)
+    godBtn.Text = godEnabled and "GOD MODE: ON" or "GOD MODE: OFF"
+    godBtn.BackgroundColor3 = godEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+    
+    if godEnabled then
+        -- Tanggalin ang "Death" connection
+        local char = LP.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+            char.Humanoid.Name = "SpoofedHumanoid" -- Palitan ang pangalan para hindi mahanap ng 1-hit scripts
         end
-    end)
+        
+        task.spawn(function()
+            while godEnabled do
+                pcall(function()
+                    LP.Character.SpoofedHumanoid.Health = LP.Character.SpoofedHumanoid.MaxHealth
+                end)
+                task.wait()
+            end
+        end)
+    end
 end)
 
--- === TRAIN SPEED INJECTOR ===
-local speedGlitch = false
-speedBtn.MouseButton1Click:Connect(function()
-    speedGlitch = not speedGlitch
-    speedBtn.Text = speedGlitch and "MAX SPEED: ON" or "MAX SPEED: OFF"
-    speedBtn.BackgroundColor3 = speedGlitch and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(0, 100, 200)
+-- === ULTRA TRAIN (ALL REMOTES SPAM) ===
+local training = false
+trainBtn.MouseButton1Click:Connect(function()
+    training = not training
+    trainBtn.Text = training and "ULTRA TRAIN: ON" or "ULTRA TRAIN: OFF"
+    trainBtn.BackgroundColor3 = training and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(0, 80, 150)
     
     task.spawn(function()
-        while speedGlitch do
-            -- I-fire ang Speed Remote para laging "Max" ang Train Speed bar mo
+        while training do
+            -- Sabay na if-fire ang Click at Speed para pilitin ang server na mag-update
             pcall(function()
-                speedRemote:FireServer() 
+                clickRemote:FireServer()
+                speedRemote:FireServer()
             end)
-            task.wait(0.01) -- Spam speed updates
+            task.wait(0.05) -- Mas safe na interval para hindi maki-kick
         end
     end)
 end)
