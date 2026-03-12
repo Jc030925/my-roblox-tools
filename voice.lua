@@ -1,4 +1,4 @@
--- [[ NUCLEAR GOD MODE + TRAIN SNIPER ]] --
+-- [[ CUSTOM CHAR GOD MODE + ADAPTIVE TRAIN ]] --
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local RS = game:GetService("ReplicatedStorage")
@@ -11,7 +11,7 @@ local ScreenGui = Instance.new("ScreenGui", LP.PlayerGui)
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Size = UDim2.new(0, 180, 0, 110)
 MainFrame.Position = UDim2.new(0, 10, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.Draggable = true
 MainFrame.Active = true
 
@@ -26,51 +26,53 @@ local function createBtn(name, pos, color)
     return b
 end
 
-local godBtn = createBtn("GHOST GOD: OFF", UDim2.new(0, 5, 0, 5), Color3.fromRGB(100, 0, 0))
-local trainBtn = createBtn("OP TRAIN: OFF", UDim2.new(0, 5, 0, 55), Color3.fromRGB(0, 80, 180))
+local godBtn = createBtn("FORCE GOD: OFF", UDim2.new(0, 5, 0, 5), Color3.fromRGB(100, 0, 0))
+local trainBtn = createBtn("AUTO TRAIN: OFF", UDim2.new(0, 5, 0, 55), Color3.fromRGB(0, 80, 180))
 
--- === GHOST GOD MODE (Hitbox Destroyer) ===
-local ghostEnabled = false
+-- === CUSTOM GOD MODE LOGIC ===
+local godActive = false
 godBtn.MouseButton1Click:Connect(function()
-    ghostEnabled = not ghostEnabled
-    godBtn.Text = ghostEnabled and "GHOST GOD: ON" or "GHOST GOD: OFF"
-    godBtn.BackgroundColor3 = ghostEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(100, 0, 0)
+    godActive = not godActive
+    godBtn.Text = godActive and "FORCE GOD: ON" or "FORCE GOD: OFF"
+    godBtn.BackgroundColor3 = godActive and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(100, 0, 0)
     
-    if ghostEnabled then
-        local char = LP.Character
-        if char then
-            -- Itatago natin ang HumanoidRootPart sa server
-            for _, v in pairs(char:GetChildren()) do
-                if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
-                    v.CanTouch = false -- Hindi ka na matatamaan ng attacks
+    task.spawn(function()
+        while godActive do
+            pcall(function()
+                local char = LP.Character
+                if char then
+                    -- 1. I-refill lahat ng posibleng Health values
+                    for _, v in pairs(char:GetDescendants()) do
+                        if v:IsA("NumberValue") or v:IsA("IntValue") then
+                            if v.Name:lower():find("health") or v.Name:lower():find("hp") then
+                                v.Value = 999999 -- Gawing overkill ang HP value
+                            end
+                        end
+                    end
+                    -- 2. I-disable ang joints breaking
+                    if char:FindFirstChildOfClass("Humanoid") then
+                        char.Humanoid.Health = char.Humanoid.MaxHealth
+                    end
                 end
-            end
-            -- Anti-Void protection
-            char.HumanoidRootPart.Anchored = false
+            end)
+            task.wait(0.1)
         end
-    end
+    end)
 end)
 
--- === OP TRAIN (Adaptive Spam) ===
+-- === AUTO TRAIN (Safe Loop) ===
 local training = false
 trainBtn.MouseButton1Click:Connect(function()
     training = not training
-    trainBtn.Text = training and "OP TRAIN: ON" or "OP TRAIN: OFF"
+    trainBtn.Text = training and "AUTO TRAIN: ON" or "AUTO TRAIN: OFF"
     trainBtn.BackgroundColor3 = training and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(0, 80, 180)
     
     task.spawn(function()
         while training do
             pcall(function()
-                -- I-fire ang Remote
                 trainRemote:FireServer()
-                
-                -- Isabay natin ang local click animation para "legit" tignan
-                local tool = LP.Character:FindFirstChildOfClass("Tool")
-                if tool then tool:Activate() end
             end)
-            
-            -- Binagalan natin konti (0.07) para hindi ma-flag ng server anticheat
-            task.wait(0.07) 
+            task.wait(0.1) -- Binagalan natin para hindi ma-kick ng server-side anticheat
         end
     end)
 end)
