@@ -1,17 +1,17 @@
--- [[ GOD MODE + TRAIN SNIPER ]] --
+-- [[ GOD MODE + SPEED TRAIN INJECTOR ]] --
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Hanapin ang Remote sa loob ng folder structure na nakita mo sa Dex
-local trainRemote = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("TrainSystem"):WaitForChild("ReqClickTrain")
+-- Target Remote based sa Dex screenshot mo
+local speedRemote = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("TrainSystem"):WaitForChild("ReqUpdateTrainSpeed")
 
 -- === UI SETUP ===
 local ScreenGui = Instance.new("ScreenGui", LP.PlayerGui)
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Size = UDim2.new(0, 160, 0, 110)
 MainFrame.Position = UDim2.new(0, 10, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.Draggable = true
 MainFrame.Active = true
 
@@ -27,15 +27,14 @@ local function createBtn(name, pos, color)
 end
 
 local godBtn = createBtn("God Mode: OFF", UDim2.new(0, 5, 0, 5), Color3.fromRGB(150, 0, 0))
-local trainBtn = createBtn("ULTRA TRAIN: OFF", UDim2.new(0, 5, 0, 55), Color3.fromRGB(0, 0, 150))
+local speedBtn = createBtn("MAX SPEED: OFF", UDim2.new(0, 5, 0, 55), Color3.fromRGB(0, 100, 200))
 
--- === GOD MODE LOGIC ===
+-- === GOD MODE ===
 local godEnabled = false
 godBtn.MouseButton1Click:Connect(function()
     godEnabled = not godEnabled
     godBtn.Text = godEnabled and "God Mode: ON" or "God Mode: OFF"
     godBtn.BackgroundColor3 = godEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
-    
     task.spawn(function()
         while godEnabled do
             if LP.Character and LP.Character:FindFirstChild("Humanoid") then
@@ -46,18 +45,20 @@ godBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- === ULTRA TRAIN LOGIC ===
-local training = false
-trainBtn.MouseButton1Click:Connect(function()
-    training = not training
-    trainBtn.Text = training and "ULTRA TRAIN: ON" or "ULTRA TRAIN: OFF"
-    trainBtn.BackgroundColor3 = training and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(0, 0, 150)
+-- === TRAIN SPEED INJECTOR ===
+local speedGlitch = false
+speedBtn.MouseButton1Click:Connect(function()
+    speedGlitch = not speedGlitch
+    speedBtn.Text = speedGlitch and "MAX SPEED: ON" or "MAX SPEED: OFF"
+    speedBtn.BackgroundColor3 = speedGlitch and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(0, 100, 200)
     
     task.spawn(function()
-        while training do
-            -- Dito natin "i-i-inject" yung stats direkta sa server
-            trainRemote:FireServer()
-            task.wait(0.01) -- Sobrang bilis na spam
+        while speedGlitch do
+            -- I-fire ang Speed Remote para laging "Max" ang Train Speed bar mo
+            pcall(function()
+                speedRemote:FireServer() 
+            end)
+            task.wait(0.01) -- Spam speed updates
         end
     end)
 end)
