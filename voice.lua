@@ -1,52 +1,63 @@
--- [[ ANTI-1-HIT GOD MODE ]] --
+-- [[ GOD MODE + TRAIN SNIPER ]] --
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Hanapin ang Remote sa loob ng folder structure na nakita mo sa Dex
+local trainRemote = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("TrainSystem"):WaitForChild("ReqClickTrain")
 
 -- === UI SETUP ===
 local ScreenGui = Instance.new("ScreenGui", LP.PlayerGui)
-local GodButton = Instance.new("TextButton", ScreenGui)
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 160, 0, 110)
+MainFrame.Position = UDim2.new(0, 10, 0.4, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.Draggable = true
+MainFrame.Active = true
 
-GodButton.Size = UDim2.new(0, 160, 0, 50)
-GodButton.Position = UDim2.new(0, 10, 0.5, 0)
-GodButton.Text = "Anti-1-Hit: OFF"
-GodButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-GodButton.TextColor3 = Color3.new(1, 1, 1)
-GodButton.Draggable = true
-GodButton.Active = true
+local function createBtn(name, pos, color)
+    local b = Instance.new("TextButton", MainFrame)
+    b.Size = UDim2.new(1, -10, 0, 45)
+    b.Position = pos
+    b.Text = name
+    b.BackgroundColor3 = color
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Font = Enum.Font.SourceSansBold
+    return b
+end
 
--- === THE BYPASS LOGIC ===
+local godBtn = createBtn("God Mode: OFF", UDim2.new(0, 5, 0, 5), Color3.fromRGB(150, 0, 0))
+local trainBtn = createBtn("ULTRA TRAIN: OFF", UDim2.new(0, 5, 0, 55), Color3.fromRGB(0, 0, 150))
+
+-- === GOD MODE LOGIC ===
 local godEnabled = false
-
-GodButton.MouseButton1Click:Connect(function()
+godBtn.MouseButton1Click:Connect(function()
     godEnabled = not godEnabled
+    godBtn.Text = godEnabled and "God Mode: ON" or "God Mode: OFF"
+    godBtn.BackgroundColor3 = godEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
     
-    if godEnabled then
-        GodButton.Text = "Anti-1-Hit: ON"
-        GodButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-        
-        local char = LP.Character
-        if char and char:FindFirstChild("Humanoid") then
-            -- 1. Gagawin nating imortal ang Humanoid locally
-            char.Humanoid.Name = "Immortality" -- Pinapalitan ang pangalan para malito ang server scripts
-            
-            -- 2. Anti-Death Loop
-            task.spawn(function()
-                while godEnabled do
-                    if char:FindFirstChild("Immortality") then
-                        if char.Immortality.Health < 0.1 then
-                            char.Immortality.Health = char.Immortality.MaxHealth
-                        end
-                    end
-                    task.wait()
-                end
-            end)
+    task.spawn(function()
+        while godEnabled do
+            if LP.Character and LP.Character:FindFirstChild("Humanoid") then
+                LP.Character.Humanoid.Health = LP.Character.Humanoid.MaxHealth
+            end
+            task.wait(0.1)
         end
-    else
-        GodButton.Text = "Anti-1-Hit: OFF"
-        GodButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        -- Reset Character para bumalik sa normal
-        if LP.Character and LP.Character:FindFirstChild("Immortality") then
-            LP.Character.Immortality.Health = 0
+    end)
+end)
+
+-- === ULTRA TRAIN LOGIC ===
+local training = false
+trainBtn.MouseButton1Click:Connect(function()
+    training = not training
+    trainBtn.Text = training and "ULTRA TRAIN: ON" or "ULTRA TRAIN: OFF"
+    trainBtn.BackgroundColor3 = training and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(0, 0, 150)
+    
+    task.spawn(function()
+        while training do
+            -- Dito natin "i-i-inject" yung stats direkta sa server
+            trainRemote:FireServer()
+            task.wait(0.01) -- Sobrang bilis na spam
         end
-    end
+    end)
 end)
