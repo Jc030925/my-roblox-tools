@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BlinkClient = require(ReplicatedStorage:WaitForChild("Blink").Client)
 local lp = game.Players.LocalPlayer
 
--- Configuration
+-- Configuration 
 local targetRods = {
     "NexusDivaRod", "NexusAlphaRod", "AngelRod", 
     "HoneyDipperRod", "SakuraRod", "RobuxRod", 
