@@ -1,56 +1,57 @@
--- Dex-Based Rod Injector
+-- Ultimate Database Injector
 local ScreenGui = Instance.new("ScreenGui")
 local MainBtn = Instance.new("TextButton")
 
 ScreenGui.Parent = game.CoreGui
 MainBtn.Parent = ScreenGui
-MainBtn.Size = UDim2.new(0, 200, 0, 50)
-MainBtn.Position = UDim2.new(0.5, -100, 0.4, 0)
-MainBtn.Text = "FORCE LIGHTNING ROD"
+MainBtn.Size = UDim2.new(0, 250, 0, 50)
+MainBtn.Position = UDim2.new(0.5, -125, 0.4, 0)
+MainBtn.Text = "FORCE LIGHTNING DATA"
 MainBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+MainBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 MainBtn.Draggable = true
 
--- TARGET MULA SA DEX MO
-local ROD_NAME = "LightningRod" 
-local ROD_FOLDER = game.ReplicatedStorage.FishingResources.Rods
-
-MainBtn.MouseButton1Click:Connect(function()
+local function forceData()
+    local target = "LightningRod"
+    local lp = game.Players.LocalPlayer
     local rs = game:GetService("ReplicatedStorage")
-    local rodObj = ROD_FOLDER:FindFirstChild(ROD_NAME)
     
-    print("Injecting from FishingResources...")
-
-    -- STEP 1: Hanapin ang Remote sa GachaResources o Controllers
-    -- Madalas ang mga game na ito ay may 'Equip' remote sa loob ng Controllers
-    local allRemotes = rs:GetDescendants()
+    -- Hanapin ang folder mo sa PlayersData
+    local myData = rs:WaitForChild("PlayersData"):FindFirstChild(lp.Name)
     
-    for _, remote in pairs(allRemotes) do
-        if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
-            pcall(function()
-                -- Sinusubukan nating i-send ang Rod Object mismo
-                if rodObj then
-                    if remote:IsA("RemoteEvent") then
-                        remote:FireServer(rodObj)
-                        remote:FireServer("Equip", rodObj)
-                        remote:FireServer("Update", ROD_NAME)
-                    else
-                        remote:InvokeServer(rodObj)
-                    end
+    if myData then
+        local fishing = myData:FindFirstChild("FishingData")
+        if fishing then
+            print("FishingData Found! Patching values...")
+            
+            -- 1. Force Change CurrentRod (Ang nakita natin sa Dex)
+            local currentRodValue = fishing:FindFirstChild("CurrentRod")
+            if currentRodValue then
+                currentRodValue.Value = target
+                print("CurrentRod updated to LightningRod!")
+            end
+            
+            -- 2. Add to Inventory (Ang Rods folder sa Dex)
+            local rodsFolder = fishing:FindFirstChild("Rods")
+            if rodsFolder then
+                if not rodsFolder:FindFirstChild(target) then
+                    local newRod = Instance.new("BoolValue")
+                    newRod.Name = target
+                    newRod.Value = true
+                    newRod.Parent = rodsFolder
+                    print("LightningRod added to owned inventory!")
                 end
-            end)
+            end
         end
     end
     
-    -- STEP 2: Force unlock sa PlayersData (Client-side mirror)
-    -- Para isipin ng UI na 'Owned' mo na ang item
-    local lp = game.Players.LocalPlayer
-    pcall(function()
-        local inv = lp:FindFirstChild("PlayersData") or rs:FindFirstChild("PlayersData")
-        if inv then
-            -- Sinusubukan nating i-insert ang pangalan mo sa owned list
-            print("Attempting to patch PlayersData...")
+    -- 3. Trigger Server Sync
+    -- Hahanapin natin ang remote na nag-se-save ng data para pumasok sa server
+    for _, remote in pairs(rs:GetDescendants()) do
+        if remote:IsA("RemoteEvent") and (remote.Name:find("Save") or remote.Name:find("Update")) then
+            remote:FireServer()
         end
-    end)
-    
-    print("Request Sent. Re-open your Rod Menu to refresh!")
-end)
+    end
+end
+
+MainBtn.MouseButton1Click:Connect(forceData)
