@@ -2,11 +2,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BlinkClient = require(ReplicatedStorage:WaitForChild("Blink").Client)
 local lp = game.Players.LocalPlayer
 
--- Configuration 
+-- Configuration (Inalis na ang 4 na rods na sinabi mo)
 local targetRods = {
-    "NexusDivaRod", "NexusAlphaRod", "AngelRod", 
-    "HoneyDipperRod", "SakuraRod", "RobuxRod", 
-    "LightningRod", "GingerbreadSpatulaRod", "BamboopandaRod"
+    "NexusDivaRod", 
+    "NexusAlphaRod", 
+    "AngelRod", 
+    "SakuraRod", 
+    "LightningRod"
 }
 _G.AutoGacha = false
 
@@ -22,7 +24,7 @@ frame.Draggable = true
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 30)
-title.Text = "GACHA HELPER"
+title.Text = "GACHA HELPER V2"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
@@ -46,7 +48,7 @@ stopBtn.TextColor3 = Color3.new(1, 1, 1)
 local moneyBtn = Instance.new("TextButton", frame)
 moneyBtn.Size = UDim2.new(0, 200, 0, 40)
 moneyBtn.Position = UDim2.new(0, 10, 0, 130)
-moneyBtn.Text = "ADD 5,000,000 COINS"
+moneyBtn.Text = "ADD 500,000 COINS"
 moneyBtn.BackgroundColor3 = Color3.fromRGB(218, 165, 32)
 moneyBtn.TextColor3 = Color3.new(1, 1, 1)
 
@@ -58,7 +60,6 @@ local function startGacha()
     
     task.spawn(function()
         while _G.AutoGacha do
-            -- 1. Check Data Loaded & Inventory
             local myData = ReplicatedStorage:WaitForChild("PlayersData"):FindFirstChild(lp.Name)
             if myData then
                 local rodsFolder = myData.FishingData.Rods
@@ -74,19 +75,17 @@ local function startGacha()
 
             if not _G.AutoGacha then break end
 
-            -- 2. Blink Invoke
             local success, result = pcall(function()
                 return BlinkClient.GachaFunc.Invoke("Rod")
             end)
 
             if success then
                 print("Rolled: " .. tostring(result))
-                -- Stop if result is a target
                 for _, targetName in pairs(targetRods) do
                     if result == targetName then _G.AutoGacha = false break end
                 end
             end
-            task.wait(0.1)
+            task.wait(0.6)
         end
         playBtn.Text = "START AUTO GACHA"
     end)
