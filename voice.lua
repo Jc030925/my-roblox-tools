@@ -46,7 +46,7 @@ stopBtn.TextColor3 = Color3.new(1, 1, 1)
 local moneyBtn = Instance.new("TextButton", frame)
 moneyBtn.Size = UDim2.new(0, 200, 0, 40)
 moneyBtn.Position = UDim2.new(0, 10, 0, 130)
-moneyBtn.Text = "ADD 500,000 COINS"
+moneyBtn.Text = "ADD 5,000,000 COINS"
 moneyBtn.BackgroundColor3 = Color3.fromRGB(218, 165, 32)
 moneyBtn.TextColor3 = Color3.new(1, 1, 1)
 
@@ -86,7 +86,7 @@ local function startGacha()
                     if result == targetName then _G.AutoGacha = false break end
                 end
             end
-            task.wait(0.6)
+            task.wait(0.1)
         end
         playBtn.Text = "START AUTO GACHA"
     end)
