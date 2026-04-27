@@ -1,57 +1,33 @@
--- Ultimate Database Injector
-local ScreenGui = Instance.new("ScreenGui")
-local MainBtn = Instance.new("TextButton")
+-- Force Visual Refresh
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rs = game:GetService("ReplicatedStorage")
 
-ScreenGui.Parent = game.CoreGui
-MainBtn.Parent = ScreenGui
-MainBtn.Size = UDim2.new(0, 250, 0, 50)
-MainBtn.Position = UDim2.new(0.5, -125, 0.4, 0)
-MainBtn.Text = "FORCE LIGHTNING DATA"
-MainBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-MainBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-MainBtn.Draggable = true
+-- 1. I-locate ang LightningRod Model mula sa resources na nakita natin sa Dex
+local rodModel = rs.FishingResources.Rods:FindFirstChild("LightningRod")
 
-local function forceData()
-    local target = "LightningRod"
-    local lp = game.Players.LocalPlayer
-    local rs = game:GetService("ReplicatedStorage")
+local function refreshEquip()
+    print("Force spawning LightningRod model...")
     
-    -- Hanapin ang folder mo sa PlayersData
-    local myData = rs:WaitForChild("PlayersData"):FindFirstChild(lp.Name)
-    
-    if myData then
-        local fishing = myData:FindFirstChild("FishingData")
-        if fishing then
-            print("FishingData Found! Patching values...")
-            
-            -- 1. Force Change CurrentRod (Ang nakita natin sa Dex)
-            local currentRodValue = fishing:FindFirstChild("CurrentRod")
-            if currentRodValue then
-                currentRodValue.Value = target
-                print("CurrentRod updated to LightningRod!")
-            end
-            
-            -- 2. Add to Inventory (Ang Rods folder sa Dex)
-            local rodsFolder = fishing:FindFirstChild("Rods")
-            if rodsFolder then
-                if not rodsFolder:FindFirstChild(target) then
-                    local newRod = Instance.new("BoolValue")
-                    newRod.Name = target
-                    newRod.Value = true
-                    newRod.Parent = rodsFolder
-                    print("LightningRod added to owned inventory!")
-                end
-            end
-        end
+    -- I-delete ang lumang hawak na rod para hindi mag-conflict
+    for _, tool in pairs(player.Backpack:GetChildren()) do
+        if tool:IsA("Tool") then tool:Destroy() end
     end
-    
-    -- 3. Trigger Server Sync
-    -- Hahanapin natin ang remote na nag-se-save ng data para pumasok sa server
-    for _, remote in pairs(rs:GetDescendants()) do
-        if remote:IsA("RemoteEvent") and (remote.Name:find("Save") or remote.Name:find("Update")) then
-            remote:FireServer()
-        end
+    if character:FindFirstChildOfClass("Tool") then
+        character:FindFirstChildOfClass("Tool"):Destroy()
+    end
+
+    -- 2. I-clone ang LightningRod direkta sa Backpack mo
+    if rodModel then
+        local newRod = rodModel:Clone()
+        newRod.Parent = player.Backpack
+        
+        -- Pilitin ang character na i-equip ito
+        character.Humanoid:EquipTool(newRod)
+        print("Equip successful!")
+    else
+        print("LightningRod model not found in FishingResources!")
     end
 end
 
-MainBtn.MouseButton1Click:Connect(forceData)
+refreshEquip()
