@@ -1,227 +1,108 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 local BlinkClient = require(ReplicatedStorage:WaitForChild("Blink").Client)
-
 local lp = game.Players.LocalPlayer
 
-
-
--- Configuration (Inalis na ang 4 na rods na sinabi mo)
-
-local targetRods = {
-
-    "NexusDivaRod", 
-
-    "NexusAlphaRod", 
-
-    "AngelRod", 
-
-    "SakuraRod", 
-
-    "LightningRod"
-
-}
+-- Configurations
+local targetRods = {"NexusDivaRod", "NexusAlphaRod", "AngelRod", "SakuraRod", "LightningRod"}
+local targetWings = {"NexusAlphaWings", "NexusDivaWings", "LightningWings", "SakuraWings", "QueenFloraWings"}
+local targetSwords = {"SakuraKatana", "NexusAlphaSword", "NexusDivaSword"}
 
 _G.AutoGacha = false
 
-
-
--- UI Setup
-
+-- UI Setup (Nilakihan para sa bagong buttons)
 local sg = Instance.new("ScreenGui", game.CoreGui)
-
 local frame = Instance.new("Frame", sg)
-
-frame.Size = UDim2.new(0, 220, 0, 180)
-
+frame.Size = UDim2.new(0, 220, 0, 310)
 frame.Position = UDim2.new(0.5, -110, 0.2, 0)
-
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-
 frame.BorderSizePixel = 2
-
 frame.Active = true
-
 frame.Draggable = true
 
-
-
 local title = Instance.new("TextLabel", frame)
-
 title.Size = UDim2.new(1, 0, 0, 30)
-
-title.Text = "GACHA HELPER V2"
-
+title.Text = "GACHA HELPER V3"
 title.TextColor3 = Color3.new(1, 1, 1)
-
 title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
-
-
--- PLAY BUTTON
-
-local playBtn = Instance.new("TextButton", frame)
-
-playBtn.Size = UDim2.new(0, 200, 0, 40)
-
-playBtn.Position = UDim2.new(0, 10, 0, 40)
-
-playBtn.Text = "START AUTO GACHA"
-
-playBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-
-playBtn.TextColor3 = Color3.new(1, 1, 1)
-
-
-
--- STOP BUTTON
-
-local stopBtn = Instance.new("TextButton", frame)
-
-stopBtn.Size = UDim2.new(0, 200, 0, 40)
-
-stopBtn.Position = UDim2.new(0, 10, 0, 85)
-
-stopBtn.Text = "STOP AUTO GACHA"
-
-stopBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-
-stopBtn.TextColor3 = Color3.new(1, 1, 1)
-
-
-
--- ADD MONEY BUTTON
-
-local moneyBtn = Instance.new("TextButton", frame)
-
-moneyBtn.Size = UDim2.new(0, 200, 0, 40)
-
-moneyBtn.Position = UDim2.new(0, 10, 0, 130)
-
-moneyBtn.Text = "ADD 500,000 COINS"
-
-moneyBtn.BackgroundColor3 = Color3.fromRGB(218, 165, 32)
-
-moneyBtn.TextColor3 = Color3.new(1, 1, 1)
-
-
-
--- GACHA LOGIC
-
-local function startGacha()
-
-    if _G.AutoGacha then return end
-
-    _G.AutoGacha = true
-
-    playBtn.Text = "RUNNING..."
-
-    
-
-    task.spawn(function()
-
-        while _G.AutoGacha do
-
-            local myData = ReplicatedStorage:WaitForChild("PlayersData"):FindFirstChild(lp.Name)
-
-            if myData then
-
-                local rodsFolder = myData.FishingData.Rods
-
-                for _, targetName in pairs(targetRods) do
-
-                    local foundRod = rodsFolder:FindFirstChild(targetName)
-
-                    if foundRod and foundRod.Value == true then
-
-                        print("JACKPOT! Nakuha na ang: " .. targetName)
-
-                        _G.AutoGacha = false
-
-                        break
-
-                    end
-
-                end
-
-            end
-
-
-
-            if not _G.AutoGacha then break end
-
-
-
-            local success, result = pcall(function()
-
-                return BlinkClient.GachaFunc.Invoke("Rod")
-
-            end)
-
-
-
-            if success then
-
-                print("Rolled: " .. tostring(result))
-
-                for _, targetName in pairs(targetRods) do
-
-                    if result == targetName then _G.AutoGacha = false break end
-
-                end
-
-            end
-
-            task.wait(0)
-
-        end
-
-        playBtn.Text = "START AUTO GACHA"
-
-    end)
-
+-- Function para sa Button creation para malinis
+local function createBtn(text, pos, color)
+    local btn = Instance.new("TextButton", frame)
+    btn.Size = UDim2.new(0, 200, 0, 35)
+    btn.Position = pos
+    btn.Text = text
+    btn.BackgroundColor3 = color
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.SourceSansBold
+    return btn
 end
 
+local rodBtn = createBtn("AUTO ROD GACHA", UDim2.new(0, 10, 0, 40), Color3.fromRGB(0, 100, 200))
+local wingBtn = createBtn("AUTO WINGS GACHA", UDim2.new(0, 10, 0, 80), Color3.fromRGB(100, 0, 150))
+local swordBtn = createBtn("AUTO SWORD GACHA", UDim2.new(0, 10, 0, 120), Color3.fromRGB(180, 50, 0))
+local moneyBtn = createBtn("ADD 5,000,000 COINS", UDim2.new(0, 10, 0, 170), Color3.fromRGB(218, 165, 32))
+local stopBtn = createBtn("STOP ALL GACHA", UDim2.new(0, 10, 0, 215), Color3.fromRGB(150, 0, 0))
+local stealthBtn = createBtn("STEALTH: OFF", UDim2.new(0, 10, 0, 260), Color3.fromRGB(60, 60, 60))
 
-
--- MONEY LOGIC
-
-local function addMoney()
-
-    local COIN_AMOUNT = 5000000
-
-    local rs = game:GetService("ReplicatedStorage")
-
-    for _, obj in pairs(rs:GetDescendants()) do
-
-        if obj:IsA("RemoteEvent") then
-
-            obj:FireServer(COIN_AMOUNT)
-
-            obj:FireServer("Coins", COIN_AMOUNT)
-
-            obj:FireServer("Add", COIN_AMOUNT)
-
-        end
-
-    end
-
-    print("Money Remotes Fired.")
-
-end
-
-
-
--- BUTTON CONNECTIONS
-
-playBtn.MouseButton1Click:Connect(startGacha)
-
-stopBtn.MouseButton1Click:Connect(function()
-
-    _G.AutoGacha = false
-
-    print("Auto-Gacha Stopped.")
-
+-- Stealth Logic (Anti-Log)
+local isStealth = false
+stealthBtn.MouseButton1Click:Connect(function()
+    isStealth = not isStealth
+    stealthBtn.Text = isStealth and "STEALTH: ON" or "STEALTH: OFF"
+    stealthBtn.BackgroundColor3 = isStealth and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(60, 60, 60)
 end)
 
+-- Unified Gacha Function
+local function startGacha(mode, targetList)
+    if _G.AutoGacha then return end
+    _G.AutoGacha = true
+    
+    task.spawn(function()
+        while _G.AutoGacha do
+            -- Gacha Invoke
+            local success, result = pcall(function()
+                return BlinkClient.GachaFunc.Invoke(mode)
+            end)
+
+            if success and result then
+                print(mode .. " Rolled: " .. tostring(result))
+                for _, target in pairs(targetList) do
+                    if tostring(result):find(target) then 
+                        print("JACKPOT: " .. target)
+                        _G.AutoGacha = false 
+                        break 
+                    end
+                end
+            end
+            
+            -- Stealth delay para hindi halata sa logs
+            if isStealth then
+                task.wait(0.7 + math.random() * 0.5)
+            else
+                task.wait(0)
+            end
+        end
+    end)
+end
+
+-- Money Logic
+local function addMoney()
+    local COIN_AMOUNT = 5000000
+    for _, obj in pairs(ReplicatedStorage:GetDescendants()) do
+        if obj:IsA("RemoteEvent") then
+            pcall(function()
+                obj:FireServer(COIN_AMOUNT)
+                obj:FireServer("Coins", COIN_AMOUNT)
+                obj:FireServer("Add", COIN_AMOUNT)
+            end)
+        end
+    end
+    print("Money Remotes Fired.")
+end
+
+-- Connections
+rodBtn.MouseButton1Click:Connect(function() startGacha("Rod", targetRods) end)
+wingBtn.MouseButton1Click:Connect(function() startGacha("Wings", targetWings) end)
+swordBtn.MouseButton1Click:Connect(function() startGacha("Sword", targetSwords) end)
 moneyBtn.MouseButton1Click:Connect(addMoney)
+stopBtn.MouseButton1Click:Connect(function() _G.AutoGacha = false end)
