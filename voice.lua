@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TeleportService = game:GetService("TeleportService")
 local lp = game.Players.LocalPlayer
 
--- Siguraduhin nating mahanap ang GachaClient folder base sa Dex screenshot mo
+-- Siguraduhin nating mahanap ang GachaClient folder base sa Dex screenshot mo 
 local GachaClient = ReplicatedStorage:WaitForChild("GachaClient", 10)
 if not GachaClient then 
     warn("GachaClient folder not found in ReplicatedStorage!")
